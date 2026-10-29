@@ -1,0 +1,9 @@
+carddav
+Copyright 2026 XMyFun
+
+This product includes software developed as part of the carddav project
+(https://github.com/xmyfun/python-carddav).
+
+The runtime dependency `httpx` is distributed under the BSD 3-Clause License and
+is not bundled with this project. The optional backends `requests` (Apache-2.0)
+and `h2` (MIT) are likewise installed separately, never vendored.

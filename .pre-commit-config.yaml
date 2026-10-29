@@ -1,0 +1,27 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.3
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v2.4.0
+    hooks:
+      - id: mypy
+        args: [src]
+        additional_dependencies: [types-requests]
+
+  - repo: local
+    hooks:
+      - id: vermin
+        name: vermin (enforce Python 3.10 floor)
+        entry: uv run vermin -t=3.10- --violations src
+        language: system
+        pass_filenames: false
+      - id: pytest-not-live
+        name: pytest (offline, "not live")
+        entry: uv run pytest -q -m "not live"
+        language: system
+        pass_filenames: false
