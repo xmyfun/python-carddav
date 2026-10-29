@@ -1,6 +1,6 @@
 # 同步模型：原语在库里，引擎在应用里
 
-[English](sync.md) · **简体中文**
+[English](sync-model.md) · **简体中文**
 
 本库**不做**任何同步。它只提供四个协议原语，然后就停手。本页解释为什么，以及你的应用必须自己承担什么。
 
@@ -74,7 +74,7 @@ flowchart TB
 1. **`href` 不是身份，`UID` 才是。** 按 `href` 对齐时，服务端改名会把一张卡变成「删一张 + 加一张」。
 2. **更新必须 `PUT` 回原 `href`。** 重新推导 `<uid>.vcf` 可能**新建第二张卡**（宽容的服务端两张并存，
    sabre/dav 用 `no-uid-conflict` 拒绝）。用 `put_card(..., href=card.href)`。
-3. **服务端会改写。** Radicale 会用文件名重设 `UID`（见 [servers.zh-CN.md](servers.zh-CN.md) 第 2 条）。
+3. **服务端会改写。** Radicale 会用文件名重设 `UID`（见 [quirks.zh-CN.md](quirks.zh-CN.md) 第 2 条）。
    永远把响应当作新 base。
 4. **删除是永久的，而且不可靠。** `sync-token` 过期后没有墓碑；全量重列无法区分「远端删了」与「从未同步过」。
 

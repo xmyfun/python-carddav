@@ -1,6 +1,6 @@
 # Server support & quirks
 
-**English** · [简体中文](servers.zh-CN.md)
+**English** · [简体中文](quirks.zh-CN.md)
 
 CardDAV looks like one protocol but behaves like several. This page records what we have
 actually verified, what other people report, and the practical rules that follow.
@@ -107,6 +107,23 @@ may still appear in listings under a different name.
 Any server-side rewrite (points 2 and 4) means the bytes you get back differ from the bytes
 you sent. A sync engine that stores only "what I last sent" will see a permanent diff.
 Store **what the server returned** as your base.
+
+## What is not implemented
+
+These are deliberate gaps, not bugs. If you need one of them, use your own HTTP client —
+but then you own the protocol details described above.
+
+| Not implemented | Why |
+|---|---|
+| `OPTIONS` / `DAV` capability probing | We probe by doing, not by asking |
+| Extended `MKCOL` (create an address book) | Create books in the server UI; the library never writes collections |
+| `PROPPATCH` (rename, description) | Low value for a client whose job is contacts |
+| `COPY` / `MOVE` | Cross-collection moves change identity; that is the caller's decision |
+| `LOCK` / `UNLOCK` | `If-Match` covers the conflict cases we care about |
+| Partial retrieval (`CARDDAV:prop`) | Servers effectively do not support it |
+| `CARDDAV:limit` as pagination | Servers ignore it; truncate client-side |
+| vCard parsing, field merge, dedup | Belongs to the calling application |
+| OAuth 2.0 authorization-code flow | Pass a bearer token you already obtained |
 
 ## Practical checklist
 

@@ -84,7 +84,7 @@ discovery entirely. All of them return the same `AddressBook` / `Card` objects.
 
 Discovery itself (well-known → `current-user-principal` → `addressbook-home-set`
 → address books) is done by the library; you never write `PROPFIND` or parse
-`href` paths yourself. What is implemented, and what is deliberately not, is listed in [Protocol coverage](https://github.com/xmyfun/python-carddav/blob/main/docs/compatibility.md).
+`href` paths yourself. What is implemented, and what is deliberately not, is listed in [Server support & quirks](https://github.com/xmyfun/python-carddav/blob/main/docs/quirks.md).
 
 ## Quick start
 
@@ -118,6 +118,21 @@ with get_davclient(
         print(change.href, change.deleted)
 
     cards = book.search(query_xml, depth="1")  # addressbook-query, sent verbatim
+```
+
+## Examples
+
+Runnable scripts live in [`examples/`](https://github.com/xmyfun/python-carddav/tree/main/examples). They read
+`CARDDAV_URL` / `CARDDAV_USER` / `CARDDAV_PASSWORD` from the environment, so they need no
+arguments:
+
+```bash
+export CARDDAV_URL=https://cloud.example.org CARDDAV_USER=me CARDDAV_PASSWORD='***'
+
+uv run python examples/list_books.py        # address books and card counts
+uv run python examples/export_book.py --out ./export
+uv run python examples/watch_changes.py    # keeps a sync token in a local file
+uv run python examples/search_cards.py --text Alice
 ```
 
 ## Command line
@@ -156,16 +171,15 @@ file layout and `info.json` schema: [`docs/cli.md`](https://github.com/xmyfun/py
 | Google Contacts (**CardDAV endpoint**, not the People API) | OAuth 2.0 access token supplied by caller | not yet tested (no OAuth flow in the library) |
 | Fastmail | app password | not yet tested |
 
-"Status" means verified by our own live tests, not "the protocol should allow it". Radicale/Synology is the reference server today; sabre/dav, iCloud and Google still need credentials. Per-server quirks and the practical rules that follow are in [`docs/servers.md`](https://github.com/xmyfun/python-carddav/blob/main/docs/servers.md).
+"Status" means verified by our own live tests, not "the protocol should allow it". Radicale/Synology is the reference server today; sabre/dav, iCloud and Google still need credentials. Per-server quirks and the practical rules that follow are in [`docs/quirks.md`](https://github.com/xmyfun/python-carddav/blob/main/docs/quirks.md).
 
 ## Documentation
 
 | Page | What it covers |
 |---|---|
-| [Server support & quirks](https://github.com/xmyfun/python-carddav/blob/main/docs/servers.md) | Which servers are verified, and what each one does differently |
-| [Sync model](https://github.com/xmyfun/python-carddav/blob/main/docs/sync.md) | Why there is no sync engine, and what your application must store |
+| [Server support & quirks](https://github.com/xmyfun/python-carddav/blob/main/docs/quirks.md) | Which servers are verified, what each one does differently, and what is deliberately not implemented |
+| [Sync model](https://github.com/xmyfun/python-carddav/blob/main/docs/sync-model.md) | Why there is no sync engine, and what your application must store |
 | [CLI reference](https://github.com/xmyfun/python-carddav/blob/main/docs/cli.md) | `carddav export`: output layout, naming, `info.json`, exit codes |
-| [Protocol coverage](https://github.com/xmyfun/python-carddav/blob/main/docs/compatibility.md) | RFC 6352 features implemented, and what is deliberately missing |
 | [Changelog](https://github.com/xmyfun/python-carddav/blob/main/CHANGELOG.md) | Release history |
 
 Every page except the changelog exists in both English and Chinese (`*.zh-CN.md`).

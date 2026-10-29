@@ -1,6 +1,6 @@
 # Sync model: primitives here, engine in your app
 
-**English** · [简体中文](sync.zh-CN.md)
+**English** · [简体中文](sync-model.zh-CN.md)
 
 This library does **not** sync anything. It gives you four protocol primitives and stops
 there. This page explains why, and what your application has to own.
@@ -82,7 +82,7 @@ you can honestly call it two-way.
    a *second* card (lenient servers keep both; sabre/dav rejects with `no-uid-conflict`).
    Use `put_card(..., href=card.href)`.
 3. **Servers rewrite.** Radicale sets `UID` from the file name (see
-   [servers.md](servers.md) §2). Always store the response as the new base.
+   [quirks.md](quirks.md) §2). Always store the response as the new base.
 4. **Deletes are permanent and unreliable.** After a `sync-token` expires there is no
    tombstone; a full re-list cannot distinguish "deleted remotely" from "never synced".
 

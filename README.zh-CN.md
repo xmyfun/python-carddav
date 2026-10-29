@@ -78,7 +78,7 @@ get_davclient(url, backend=my_fake)     # 任何带 request()/close() 的对象
 | **addressbook-home-set URL** | **承载**该用户全部地址簿的容器。服务端可能把它放在**另一台主机**上 —— iCloud 就会返回分片主机，这是正常现象，不是错误。 | `https://p48-contacts.icloud.com/1437425399/carddavhome/` |
 | **某个具体地址簿 URL** | 精确指向一本地址簿 —— 跳过发现。 | `https://p48-contacts.icloud.com/1437425399/carddavhome/card/` |
 
-发现过程（well-known → `current-user-principal` → `addressbook-home-set` → 地址簿）由库完成，你永远不需要自己写 `PROPFIND` 或解析 `href` 路径。实现了什么、刻意不做什么，见[协议覆盖](https://github.com/xmyfun/python-carddav/blob/main/docs/compatibility.zh-CN.md)。
+发现过程（well-known → `current-user-principal` → `addressbook-home-set` → 地址簿）由库完成，你永远不需要自己写 `PROPFIND` 或解析 `href` 路径。实现了什么、刻意不做什么，见[服务端支持与怪癖](https://github.com/xmyfun/python-carddav/blob/main/docs/quirks.zh-CN.md)。
 
 ## 快速开始
 
@@ -114,6 +114,20 @@ with get_davclient(
     cards = book.search(query_xml, depth="1")  # addressbook-query，报文原样发送
 ```
 
+## 示例
+
+可运行的脚本在 [`examples/`](https://github.com/xmyfun/python-carddav/tree/main/examples)，从环境变量读
+`CARDDAV_URL` / `CARDDAV_USER` / `CARDDAV_PASSWORD`，不需要传参：
+
+```bash
+export CARDDAV_URL=https://cloud.example.org CARDDAV_USER=me CARDDAV_PASSWORD='***'
+
+uv run python examples/list_books.py        # 通讯录与卡片数
+uv run python examples/export_book.py --out ./export
+uv run python examples/watch_changes.py    # 把 sync token 存在本地文件里
+uv run python examples/search_cards.py --text Alice
+```
+
 ## 命令行
 
 包内自带一个薄薄的 `carddav` 命令。目前只实现了 `export` 子命令；它不做任何字段判断，只负责发现、取回、落盘。
@@ -143,16 +157,15 @@ carddav export --url https://cloud.example.org --user me --out-dir ./export --dr
 | Google 通讯录（**CardDAV 端点**，不是 People API） | 由调用方提供 OAuth 2.0 access token | 尚未实测（本库不含 OAuth 流程） |
 | Fastmail | App 专用密码 | 尚未实测 |
 
-「状态」指**我们自己的真机测试验过**，不是「协议上应该能行」。目前基准服务端是 Radicale / Synology；sabre/dav、iCloud、Google 还需要凭据。各家服务端的坑与由此得出的实用规则见 [`docs/servers.zh-CN.md`](https://github.com/xmyfun/python-carddav/blob/main/docs/servers.zh-CN.md)。
+「状态」指**我们自己的真机测试验过**，不是「协议上应该能行」。目前基准服务端是 Radicale / Synology；sabre/dav、iCloud、Google 还需要凭据。各家服务端的坑与由此得出的实用规则见 [`docs/quirks.zh-CN.md`](https://github.com/xmyfun/python-carddav/blob/main/docs/quirks.zh-CN.md)。
 
 ## 文档
 
 | 页面 | 内容 |
 |---|---|
-| [服务端支持与怪癖](https://github.com/xmyfun/python-carddav/blob/main/docs/servers.zh-CN.md) | 哪些服务端实测过，各家行为差在哪 |
-| [同步模型](https://github.com/xmyfun/python-carddav/blob/main/docs/sync.zh-CN.md) | 为什么本库没有同步引擎，应用必须自己存什么 |
+| [服务端支持与怪癖](https://github.com/xmyfun/python-carddav/blob/main/docs/quirks.zh-CN.md) | 哪些服务端实测过、各家差异、以及哪些能力刻意没做 |
+| [同步模型](https://github.com/xmyfun/python-carddav/blob/main/docs/sync-model.zh-CN.md) | 为什么本库没有同步引擎，应用必须自己存什么 |
 | [命令行参考](https://github.com/xmyfun/python-carddav/blob/main/docs/cli.zh-CN.md) | `carddav export`：输出布局、命名、`info.json`、退出码 |
-| [协议覆盖](https://github.com/xmyfun/python-carddav/blob/main/docs/compatibility.zh-CN.md) | RFC 6352 实现了哪些，哪些刻意不做 |
 | [变更日志](https://github.com/xmyfun/python-carddav/blob/main/CHANGELOG.md) | 版本历史 |
 
 除变更日志外，每页都有中英两份（英文名对应 `*.md`）。
