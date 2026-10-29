@@ -5,4 +5,4 @@ in sync so a release bump can never ship a wheel whose ``__version__`` - or whos
 ``User-Agent`` - disagrees with its metadata.
 """
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"

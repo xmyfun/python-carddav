@@ -1,6 +1,6 @@
 [project]
 name = "carddav"
-version = "0.2.0"
+version = "0.3.0"
 description = "A minimal, dependency-light CardDAV client library for Python"
 readme = "README.md"
 license-files = ["LICENSE", "NOTICE"]

@@ -4,11 +4,19 @@
 
 一个轻量、行为可预期的 **Python CardDAV 客户端库** —— PyPI 包 [`carddav`](https://pypi.org/project/carddav/) 的源码仓库。
 
-> **状态：0.2.0 —— 首个公开版本。** 下文描述的功能均已实现，并在真实服务端（Synology Contacts，底层为 Radicale 构建）上验证过。
+> **状态：0.3.0 —— 尚未发布到 PyPI。** 下文描述的功能均已实现，并在真实服务端（Synology Contacts，底层为 Radicale 构建）上验证过。
 
-## 为什么还要再造一个？
+## 现有方案
 
-现有选择要么只管日历（`caldav` 处理 CalDAV，不处理通讯录），要么已经废弃（`pyCardDAV` 只支持 Python 2），要么被埋在某个命令行应用里（`vdirsyncer` 的 CardDAV 后端不是可安装的库）。核查时间 2026-10。
+CardDAV 这块还有其他几个项目，但没有一个是「轻量、依赖少、直接说 CardDAV、且不去碰你的联系人数据」的 Python 库——这正是本项目的立足点。
+
+| 项目 | 是什么 | 为什么不合用 |
+|---|---|---|
+| [`caldav`](https://github.com/python-caldav/caldav) | 面向 Python 的 CalDAV 客户端库（管日历与待办）。 | 围绕 CalDAV 设计，不管通讯录；它的方法和数据模型都假设 `VEVENT`/`VTODO`，CardDAV 通讯录不在范围内。 |
+| [`pyCardDAV`](https://pypi.org/project/pyCardDAV/) | Python 2 时代的独立通讯录客户端，带命令行。 | 已废弃且只支持 Python 2；不能作为库导入，多年无人维护。 |
+| [`carddavclient`](https://github.com/mstilkerich/carddavclient) | 用 PHP 写的 CardDAV 客户端。 | 解决的是同一个问题，但用 PHP 写，无法成为 Python 项目的依赖。 |
+| [`vdirsyncer`](https://github.com/pimutils/vdirsyncer) | 能与 CardDAV 服务端通信的同步引擎。 | 是一个完整应用，不是可安装的库；它的 CardDAV 代码是内部实现，未向外暴露复用。 |
+| [`google-api-python-client`](https://pypi.org/project/google-api-python-client/) | Google 官方的 People REST API SDK。 | 说的是 People REST API，不是 CardDAV；只有当你想走 Google 通讯录的 REST 通路时才相关，本库刻意不封装它。 |
 
 ## 功能
 
@@ -37,7 +45,6 @@
 ```bash
 pip install carddav              # 默认 httpx 后端
 pip install "carddav[requests]"  # 可选：requests 后端
-pip install "carddav[http2]"     # 可选：HTTP/2 支持
 ```
 
 要求 Python 3.10+。注意 3.10 已上游 EOL，本库按「尽力支持」对待，下限会随依赖一起上移。
@@ -203,7 +210,7 @@ uv run mypy src
 2. **绝不出现凭据。** 密码、App 专用密码、token、`.env` 内容一律不许。
 3. **不解析 vCard。** `Card.data` 必须是服务端返回的字节；`Card.uid` 只允许扫描 `UID` 行（处理折行）。
 4. **不做字段逻辑。** 比较键、去重、合并、规范化都属于调用方。
-5. **运行时依赖只有 `httpx`。** `requests`（可选后端）与 `h2`（HTTP/2）是 extra；新增依赖必须先书面说明理由。
+5. **运行时依赖只有 `httpx`。** `requests`（可选后端）是唯一的 extra；新增依赖必须先书面说明理由。
 6. **写入绝不自动重试**，UID 绝不隐式生成或改写。
 7. **所有 HTTP 必须经 `Transport.request()`**；只有 `_backend_httpx.py` / `_backend_requests.py` 可以 import HTTP 库。
 8. **解析前拒绝含 `<!DOCTYPE` 的 XML。**

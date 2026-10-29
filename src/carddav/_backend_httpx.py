@@ -1,4 +1,4 @@
-"""httpx backend - the default HTTP stack (HTTP/1.1, HTTP/2, HTTP/3-ready)."""
+"""httpx backend - the default HTTP stack (HTTP/1.1)."""
 
 from __future__ import annotations
 
@@ -23,24 +23,17 @@ class HttpxBackend:
         auth: object | None = None,
         verify: bool = True,
         timeout: tuple[float, float] = DEFAULT_TIMEOUT,
-        http2: bool = False,
     ) -> None:
         native, extra_headers = _translate_auth(auth)
-        try:
-            self._client = httpx.Client(
-                auth=native,
-                verify=verify,
-                timeout=httpx.Timeout(
-                    connect=timeout[0], read=timeout[1], write=timeout[1], pool=timeout[0]
-                ),
-                http2=http2,
-                follow_redirects=True,
-                headers={"User-Agent": USER_AGENT, **extra_headers},
-            )
-        except ImportError as exc:  # pragma: no cover - depends on optional h2 install
-            raise ImportError(
-                "http2=True needs the optional dependency: pip install 'carddav[http2]'"
-            ) from exc
+        self._client = httpx.Client(
+            auth=native,
+            verify=verify,
+            timeout=httpx.Timeout(
+                connect=timeout[0], read=timeout[1], write=timeout[1], pool=timeout[0]
+            ),
+            follow_redirects=True,
+            headers={"User-Agent": USER_AGENT, **extra_headers},
+        )
 
     def request(
         self,

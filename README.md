@@ -4,11 +4,19 @@
 
 A thin, predictable **CardDAV client library for Python** — the source code of the PyPI package [`carddav`](https://pypi.org/project/carddav/).
 
-> **Status: 0.2.0 — first public release.** Everything below is implemented and exercised against a real server (Synology Contacts / Radicale).
+> **Status: 0.3.0 — not yet released to PyPI.** Everything below is implemented and exercised against a real server (Synology Contacts / Radicale).
 
-## Why another one?
+## Existing options
 
-The existing options are either calendar-only (`caldav` handles CalDAV, not address books), abandoned (`pyCardDAV` is Python 2 only), or buried inside a command-line application (`vdirsyncer`'s CardDAV backend is not an installable library). Checked 2026-10.
+A handful of other projects touch the CardDAV space. None of them is a small, dependency-light Python library that talks CardDAV directly and leaves your contact data alone — the gap this project fills.
+
+| Project | What it is | Why it does not fit here |
+|---|---|---|
+| [`caldav`](https://github.com/python-caldav/caldav) | A CalDAV client library for Python (calendars and tasks). | Built around CalDAV, not address books; its methods and data model assume `VEVENT`/`VTODO`, so CardDAV contacts are out of scope. |
+| [`pyCardDAV`](https://pypi.org/project/pyCardDAV/) | A Python 2-era standalone contacts client with a CLI. | Abandoned and Python 2 only; not importable as a library, and unmaintained for years. |
+| [`carddavclient`](https://github.com/mstilkerich/carddavclient) | A CardDAV client written in PHP. | Solves the right problem but in PHP, so it cannot be a dependency of a Python project. |
+| [`vdirsyncer`](https://github.com/pimutils/vdirsyncer) | A sync engine that can talk to CardDAV servers. | A full application, not an installable library; its CardDAV code is internal and not exposed for reuse. |
+| [`google-api-python-client`](https://pypi.org/project/google-api-python-client/) | Google's official SDK for the People REST API. | Speaks the People REST API, not CardDAV; only relevant if you want Google Contacts over REST, which this library deliberately does not wrap. |
 
 ## Features
 
@@ -37,7 +45,6 @@ This is on purpose: a client that "understands" your contacts can no longer tell
 ```bash
 pip install carddav              # httpx backend (default)
 pip install "carddav[requests]"  # optional: requests backend
-pip install "carddav[http2]"     # optional: HTTP/2 support
 ```
 
 Requires Python 3.10+. Note that Python 3.10 is end-of-life upstream, so it is supported on a best-effort basis and the floor will move up together with our dependencies.
@@ -220,7 +227,7 @@ server actually did, and stay small.
 2. **No credentials, ever.** No passwords, app-specific passwords, tokens, or `.env` contents.
 3. **Do not parse vCard.** `Card.data` must be the bytes the server returned. `Card.uid` may only scan for the `UID` line (handling folded lines).
 4. **No field logic.** Comparison keys, deduplication, merging and normalization belong to the calling application.
-5. **Runtime dependencies: `httpx` only.** `requests` (optional backend) and `h2` (HTTP/2) are extras. A new dependency needs a written justification first.
+5. **Runtime dependencies: `httpx` only.** `requests` (optional backend) is the only extra. A new dependency needs a written justification first.
 6. **Writes are never retried automatically**, and UIDs are never generated or rewritten implicitly.
 7. **All HTTP goes through `Transport.request()`**; only `_backend_httpx.py` / `_backend_requests.py` may import an HTTP library.
 8. **Reject XML containing `<!DOCTYPE`** before parsing.

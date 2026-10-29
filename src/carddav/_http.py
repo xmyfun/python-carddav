@@ -78,7 +78,6 @@ def make_backend(
     auth: object | None = None,
     verify: bool = True,
     timeout: tuple[float, float] = DEFAULT_TIMEOUT,
-    http2: bool = False,
 ) -> Backend:
     """Build a backend by name, or return *backend* unchanged if it is an object.
 
@@ -92,7 +91,7 @@ def make_backend(
     if name == "httpx":
         from ._backend_httpx import HttpxBackend
 
-        return HttpxBackend(auth=auth, verify=verify, timeout=timeout, http2=http2)
+        return HttpxBackend(auth=auth, verify=verify, timeout=timeout)
     if name == "requests":
         try:
             from ._backend_requests import RequestsBackend

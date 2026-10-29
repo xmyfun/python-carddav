@@ -51,7 +51,6 @@ def get_davclient(
     backend: str | Backend = "httpx",
     verify: bool = True,
     timeout: tuple[float, float] = DEFAULT_TIMEOUT,
-    http2: bool = False,
 ) -> DAVClient:
     """Create a :class:`DAVClient`. Construction only sets up the connection.
 
@@ -67,7 +66,6 @@ def get_davclient(
         backend=backend,
         verify=verify,
         timeout=timeout,
-        http2=http2,
     )
 
 
@@ -84,7 +82,6 @@ class DAVClient:
         backend: str | Backend = "httpx",
         verify: bool = True,
         timeout: tuple[float, float] = DEFAULT_TIMEOUT,
-        http2: bool = False,
     ) -> None:
         self.transport = Transport(
             make_backend(
@@ -92,7 +89,6 @@ class DAVClient:
                 auth=self._make_auth(auth, username, password),
                 verify=verify,
                 timeout=timeout,
-                http2=http2,
             )
         )
         # Bare host (no path) is resolved via RFC 6764 `.well-known/carddav`;
