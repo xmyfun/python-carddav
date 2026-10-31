@@ -37,9 +37,9 @@ class FakeTransport:
         if method == "PROPFIND":
             body = (
                 b'<?xml version="1.0"?><d:multistatus xmlns:d="DAV:">'
-                b'<d:response><d:href>/book/a.vcf</d:href>'
+                b"<d:response><d:href>/book/a.vcf</d:href>"
                 b'<d:propstat><d:prop><d:getetag>"1"</d:getetag></d:prop></d:propstat></d:response>'
-                b'<d:response><d:href>/book/b.vcf</d:href>'
+                b"<d:response><d:href>/book/b.vcf</d:href>"
                 b'<d:propstat><d:prop><d:getetag>"2"</d:getetag></d:prop></d:propstat></d:response>'
                 b"</d:multistatus>"
             )
@@ -48,13 +48,13 @@ class FakeTransport:
             body = (
                 b'<?xml version="1.0"?><d:multistatus xmlns:d="DAV:" '
                 b'xmlns:c="urn:ietf:params:xml:ns:carddav">'
-                b'<d:response><d:href>/book/a.vcf</d:href>'
+                b"<d:response><d:href>/book/a.vcf</d:href>"
                 b'<d:propstat><d:prop><d:getetag>"1"</d:getetag>'
-                b'<c:address-data>BEGIN:VCARD\r\nUID:a\r\nFN:A\r\nEND:VCARD\r\n</c:address-data>'
+                b"<c:address-data>BEGIN:VCARD\r\nUID:a\r\nFN:A\r\nEND:VCARD\r\n</c:address-data>"
                 b"</d:prop></d:propstat></d:response>"
-                b'<d:response><d:href>/book/b.vcf</d:href>'
+                b"<d:response><d:href>/book/b.vcf</d:href>"
                 b'<d:propstat><d:prop><d:getetag>"2"</d:getetag>'
-                b'<c:address-data>BEGIN:VCARD\r\nUID:b\r\nFN:B\r\nEND:VCARD\r\n</c:address-data>'
+                b"<c:address-data>BEGIN:VCARD\r\nUID:b\r\nFN:B\r\nEND:VCARD\r\n</c:address-data>"
                 b"</d:prop></d:propstat></d:response>"
                 b"</d:multistatus>"
             )
@@ -126,14 +126,14 @@ class _SubCollectionTransport(FakeTransport):
             return FakeResponse(207, b'<?xml version="1.0"?><d:multistatus xmlns:d="DAV:"/>')
         body = (
             b'<?xml version="1.0"?><d:multistatus xmlns:d="DAV:">'
-            b'<d:response><d:href>/book/a.vcf</d:href><d:propstat><d:prop>'
+            b"<d:response><d:href>/book/a.vcf</d:href><d:propstat><d:prop>"
             b'<d:getetag>"1"</d:getetag>'
             b"<d:resourcetype/></d:prop></d:propstat></d:response>"
             # RFC 6352 §5.2(a) allows a plain collection inside an address book
             b"<d:response><d:href>/book/sub/</d:href><d:propstat><d:prop>"
             b"<d:resourcetype><d:collection/></d:resourcetype>"
             b"</d:prop></d:propstat></d:response>"
-            b'<d:response><d:href>/book/b.vcf</d:href><d:propstat><d:prop>'
+            b"<d:response><d:href>/book/b.vcf</d:href><d:propstat><d:prop>"
             b'<d:getetag>"2"</d:getetag>'
             b"<d:resourcetype/></d:prop></d:propstat></d:response>"
             b"</d:multistatus>"
@@ -172,7 +172,7 @@ class _SyncTransport(FakeTransport):
             # RFC 6578 §3.6: truncation is reported against the collection itself
             b"<d:response><d:href>/book/</d:href>"
             b"<d:status>HTTP/1.1 507 Insufficient Storage</d:status></d:response>"
-            b'<d:response><d:href>/book/a.vcf</d:href><d:propstat><d:prop>'
+            b"<d:response><d:href>/book/a.vcf</d:href><d:propstat><d:prop>"
             b'<d:getetag>"9"</d:getetag></d:prop></d:propstat></d:response>'
             b"<d:response><d:href>/book/gone.vcf</d:href>"
             b"<d:status>HTTP/1.1 404 Not Found</d:status></d:response>"

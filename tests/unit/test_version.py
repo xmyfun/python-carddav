@@ -18,7 +18,7 @@ from carddav import __version__
 from carddav._http import USER_AGENT
 
 tomllib = pytest.importorskip("tomllib", reason="tomllib is stdlib from Python 3.11")
-PYPROJECT = Path(__file__).resolve().parents[1] / "pyproject.toml"
+PYPROJECT = Path(__file__).resolve().parents[2] / "pyproject.toml"
 
 
 def test_pyproject_version_matches_runtime_version() -> None:

@@ -5,10 +5,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlsplit
 
-from . import _dav, _xml
-from .card import Card, extract_uid
+from . import _dav, _naming, _xml
+from .card import Card, extract_uid, uid_to_resource_name
 from .errors import DAVError, MissingUIDError
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -17,6 +17,30 @@ if TYPE_CHECKING:  # pragma: no cover
     from .client import DAVClient
 
 MAX_HREF_IN_MULTIGET = 50
+
+
+def _resolve_post_href(collection: str, location: str) -> str:
+    """Turn a ``POST`` ``Location`` into a usable absolute href for *collection*.
+
+    Servers return the new member's URL in one of two shapes:
+
+    * a correct absolute URL, or a collection-relative URL - ``urljoin`` handles
+      both directly;
+    * a malformed **protocol-relative** URL where the collection path's first
+      segment was mistaken for a host. Xandikos 0.4.10, for a collection served at
+      ``/user/contacts/addressbook/``, returns
+      ``//user/contacts/addressbook/<uuid>.vcf``; ``urljoin`` then yields
+      ``http://user/...`` (wrong host, unresolvable). When the joined URL's host
+      does not match the collection's, reconstruct from the collection plus the
+      ``Location``'s trailing path segment (the real resource name).
+    """
+    joined = urljoin(collection, location)
+    coll = urlsplit(collection)
+    j = urlsplit(joined)
+    if j.netloc and j.netloc != coll.netloc:
+        last = location.rstrip("/").rsplit("/", 1)[-1]
+        return urljoin(collection, last)
+    return joined
 
 
 @dataclass
@@ -126,9 +150,7 @@ class AddressBook:
         """
         if not hrefs:
             return []
-        root = _dav.report(
-            self.client.transport, self.url, _xml.report_multiget(hrefs), depth="0"
-        )
+        root = _dav.report(self.client.transport, self.url, _xml.report_multiget(hrefs), depth="0")
         return _cards_from(root, self.url)
 
     def get_all_cards(self) -> list[Card]:
@@ -187,7 +209,10 @@ class AddressBook:
         card created by another client (or by the server via POST) may not be at
         ``<uid>.vcf``; PUTting to a *different* URL creates a second resource
         instead of updating that card. When omitted we derive ``<uid>.vcf`` from
-        the card's UID (stable, idempotent default).
+        the card's UID (stable, idempotent default), **percent-encoding** the UID
+        first: the UID stays recoverable (``unquote`` round-trips it) while ``/``
+        becomes ``%2F`` and ``:`` becomes ``%3A``, so a crafted UID can neither
+        escape the collection nor be parsed as a URI scheme.
 
         ``if_match``: pass the card's current etag for a safe update. On mismatch
         the server returns **412** and we raise :class:`PreconditionFailed` - no
@@ -209,7 +234,13 @@ class AddressBook:
                     "cannot derive a resource name without a UID "
                     "(pass href= to target an existing card instead)"
                 )
-            href = f"{uid}.vcf"
+            name = uid_to_resource_name(uid)
+            if name is None:
+                raise MissingUIDError(
+                    "the UID is empty, so no resource name can be derived "
+                    "(pass href= to target an existing card instead)"
+                )
+            href = f"{name}.vcf"
         url = urljoin(self.url, href)
         headers = {"Content-Type": "text/vcard; charset=utf-8"}
         if if_match is not None:
@@ -232,15 +263,22 @@ class AddressBook:
 
         * **not** RFC 6352 - that spec only defines ``PUT`` for creating cards;
         * **not** RFC 5995 - the standardised "add member" flow requires
-          discovering ``DAV:add-member`` first, which this library does not do;
-        * **not verified against any server**. The only live server this project
-          tests (Radicale / Synology) rejects POST outright - its ``OPTIONS``
-          ``Allow`` header does not even list it (``internal/06`` Q1). Third-party
-          docs report some providers accept this, but we have not confirmed it.
+          discovering ``DAV:add-member`` first, which this library does not do.
+
+        Server support is uneven and **not** guaranteed:
+
+        * Radicale answers ``405`` and Synology ``500`` - ``POST`` is not a create
+          path there, so :meth:`put_card` is the only option.
+        * Xandikos 0.4.10 answers ``200`` with a ``Location`` header, but the
+          ``Location`` is a malformed protocol-relative URL
+          (``//user/contacts/addressbook/<uuid>.vcf``) whose host was taken from the
+          collection path's first segment. The library reconstructs a usable absolute
+          href from the collection plus the ``Location``'s trailing segment, so
+          ``POST`` *is* a working create path on Xandikos (verified 2026-10-30).
 
         Returns the new card's href (resolved from the ``Location`` header).
-        Prefer :meth:`put_card` - it is the standard path and the only one this
-        project has verified end to end.
+        Prefer :meth:`put_card` - it is the standard RFC 6352 path and the only one
+        that works on every server we tested.
         """
         headers = {"Content-Type": f"{content_type}; charset=utf-8"}
         resp = _dav.request(
@@ -253,7 +291,7 @@ class AddressBook:
         location = resp.headers.get("Location")
         if not location:
             raise DAVError("POST did not return a Location header (server-assigned URL missing)")
-        return urljoin(self.url, location)
+        return _resolve_post_href(self.url, location)
 
     def delete_card(self, href: str, *, if_match: str | None = None) -> None:
         """Delete a card (``DELETE``).
@@ -273,7 +311,9 @@ class AddressBook:
         """Write all cards to disk.
 
         Default: a single ``.vcf`` bundle (multiple ``BEGIN:VCARD`` blocks).
-        ``per_card=True``: one file per card named ``<uid>.vcf`` under *path*.
+        ``per_card=True``: one file per card named ``<uid>.vcf`` under *path*. The
+        UID comes from the server and is sanitized for the filesystem, so it can
+        never escape *path* or introduce a nested directory.
 
         Only ``data`` is written - the library performs no vCard parsing or
         re-serialization, so the bytes are exactly what the server returned.
@@ -283,7 +323,7 @@ class AddressBook:
         if per_card:
             out.mkdir(parents=True, exist_ok=True)
             for c in cards:
-                name = f"{(c.uid or 'card')}.vcf"
+                name = f"{_naming.sanitize_component(c.uid, fallback='card')}.vcf"
                 (out / name).write_bytes(c.data or b"")
             return out
         if not out.suffix:

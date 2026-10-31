@@ -15,8 +15,7 @@ from carddav.errors import DAVError
 
 def _vcard(uid: str, name: str) -> bytes:
     return (
-        "BEGIN:VCARD\r\nVERSION:3.0\r\n"
-        f"UID:{uid}\r\nFN:{name}\r\nN:{name};;;;\r\nEND:VCARD\r\n"
+        f"BEGIN:VCARD\r\nVERSION:3.0\r\nUID:{uid}\r\nFN:{name}\r\nN:{name};;;;\r\nEND:VCARD\r\n"
     ).encode()
 
 
@@ -201,8 +200,9 @@ def test_cli_export_end_to_end(tmp_path: Path, capsys: pytest.CaptureFixture[str
 def test_cli_rejects_a_file_as_out_dir(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     target = tmp_path / "file.txt"
     target.write_text("x", encoding="utf-8")
-    code = main(["export", "--url", "http://h", "--out-dir", str(target)],
-                client_factory=_factory([BOOK_A]))
+    code = main(
+        ["export", "--url", "http://h", "--out-dir", str(target)], client_factory=_factory([BOOK_A])
+    )
     assert code == 2
     assert "must be a directory" in capsys.readouterr().err
 
@@ -231,8 +231,13 @@ def test_cli_skips_existing_files_and_reports_them(
 
 
 def test_cli_overwrite_replaces_existing_files(tmp_path: Path) -> None:
-    assert main(["export", "--url", "http://h", "--out-dir", str(tmp_path)],
-                client_factory=_factory([BOOK_A, BOOK_B])) == 0
+    assert (
+        main(
+            ["export", "--url", "http://h", "--out-dir", str(tmp_path)],
+            client_factory=_factory([BOOK_A, BOOK_B]),
+        )
+        == 0
+    )
     (tmp_path / "8984dcfb-0000" / "a.vcf").write_text("OLD", encoding="utf-8")
     foreign = tmp_path / "notes.txt"
     foreign.write_text("mine", encoding="utf-8")
@@ -251,8 +256,10 @@ def test_cli_overwrite_replaces_existing_files(tmp_path: Path) -> None:
 
 def test_cli_dry_run_writes_nothing(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     out = tmp_path / "out"
-    code = main(["export", "--url", "http://h", "--out-dir", str(out), "--dry-run"],
-                client_factory=_factory([BOOK_A]))
+    code = main(
+        ["export", "--url", "http://h", "--out-dir", str(out), "--dry-run"],
+        client_factory=_factory([BOOK_A]),
+    )
     assert code == 0
     assert not out.exists()
     assert "dry-run" in capsys.readouterr().out
@@ -262,8 +269,10 @@ def test_cli_returns_one_when_an_address_book_fails(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     broken = FakeBook("http://h/x/99999999/", [], error=DAVError("boom"))
-    code = main(["export", "--url", "http://h", "--out-dir", str(tmp_path)],
-                client_factory=_factory([broken, BOOK_A]))
+    code = main(
+        ["export", "--url", "http://h", "--out-dir", str(tmp_path)],
+        client_factory=_factory([broken, BOOK_A]),
+    )
     assert code == 1
     assert "FAIL" in capsys.readouterr().out
     assert (tmp_path / "8984dcfb-0000" / "a.vcf").is_file()

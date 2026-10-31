@@ -6,18 +6,6 @@
 
 > **状态：0.3.0 —— 尚未发布到 PyPI。** 下文描述的功能均已实现，并在真实服务端（Synology Contacts，底层为 Radicale 构建）上验证过。
 
-## 现有方案
-
-CardDAV 这块还有其他几个项目，但没有一个是「轻量、依赖少、直接说 CardDAV、且不去碰你的联系人数据」的 Python 库——这正是本项目的立足点。
-
-| 项目 | 是什么 | 为什么不合用 |
-|---|---|---|
-| [`caldav`](https://github.com/python-caldav/caldav) | 面向 Python 的 CalDAV 客户端库（管日历与待办）。 | 围绕 CalDAV 设计，不管通讯录；它的方法和数据模型都假设 `VEVENT`/`VTODO`，CardDAV 通讯录不在范围内。 |
-| [`pyCardDAV`](https://pypi.org/project/pyCardDAV/) | Python 2 时代的独立通讯录客户端，带命令行。 | 已废弃且只支持 Python 2；不能作为库导入，多年无人维护。 |
-| [`carddavclient`](https://github.com/mstilkerich/carddavclient) | 用 PHP 写的 CardDAV 客户端。 | 解决的是同一个问题，但用 PHP 写，无法成为 Python 项目的依赖。 |
-| [`vdirsyncer`](https://github.com/pimutils/vdirsyncer) | 能与 CardDAV 服务端通信的同步引擎。 | 是一个完整应用，不是可安装的库；它的 CardDAV 代码是内部实现，未向外暴露复用。 |
-| [`google-api-python-client`](https://pypi.org/project/google-api-python-client/) | Google 官方的 People REST API SDK。 | 说的是 People REST API，不是 CardDAV；只有当你想走 Google 通讯录的 REST 通路时才相关，本库刻意不封装它。 |
-
 ## 功能
 
 - **发现** —— `.well-known/carddav` → `current-user-principal` → `addressbook-home-set` → 地址簿列表
@@ -37,8 +25,20 @@ CardDAV 这块还有其他几个项目，但没有一个是「轻量、依赖少
 - UID 的生成或改写
 - **Google People API** —— Google 通讯录有两条通路：**CardDAV** 端点（本库实现的这条）与 **People REST API**（Google 官方 Python 客户端是 [`google-api-python-client`](https://pypi.org/project/google-api-python-client/)）。本库只实现 CardDAV 那条；若你要用 People API，请在自己的代码里用那个 SDK —— 本库既不封装也不依赖它
 - OAuth2 授权码流程与 token 刷新 —— `BearerAuth(token)` 只接收你已经拿到的 token
+- **通过 DAV 管理服务端** —— 本库只读写卡片，不管集合：不做 `OPTIONS`/`DAV` 能力探测（我们靠「做」来判断）、不做扩展 `MKCOL`、不做 `PROPPATCH`、不做 `COPY`/`MOVE`、不做 `LOCK`/`UNLOCK`（`If-Match` 已覆盖我们关心的冲突），也不做基于 `CARDDAV:prop` 的部分检索（没有服务端实现它）
 
 这是刻意的取舍：一个「懂你通讯录」的客户端，就没法再如实告诉你服务端到底做了什么。
+
+## 其他可选方案
+
+CardDAV 这块还有其他几个项目，但没有一个是「轻量、依赖少、直接说 CardDAV、且不去碰你的联系人数据」的 Python 库——这正是本项目的立足点。
+
+| 项目 | 介绍 | 为什么不适用 |
+|---|---|---|
+| [`caldav`](https://github.com/python-caldav/caldav) | 面向 Python 的 CalDAV 客户端库（管日历与待办）。 | 围绕 CalDAV 设计，不管通讯录；它的方法和数据模型都假设 `VEVENT`/`VTODO`，CardDAV 通讯录不在范围内。 |
+| [`pyCardDAV`](https://pypi.org/project/pyCardDAV/) | Python 2 时代的独立通讯录客户端，带命令行。 | 已废弃且只支持 Python 2；不能作为库导入，多年无人维护。 |
+| [`carddavclient`](https://github.com/mstilkerich/carddavclient) | 用 PHP 写的 CardDAV 客户端。 | 解决的是同一个问题，但用 PHP 写，无法成为 Python 项目的依赖。 |
+| [`vdirsyncer`](https://github.com/pimutils/vdirsyncer) | 能与 CardDAV 服务端通信的同步引擎。 | 是一个完整应用，不是可安装的库；它的 CardDAV 代码是内部实现，未向外暴露复用。 |
 
 ## 安装
 
@@ -170,7 +170,7 @@ carddav export --url https://cloud.example.org --user me --out-dir ./export --dr
 
 | 页面 | 内容 |
 |---|---|
-| [服务端支持与怪癖](https://github.com/xmyfun/python-carddav/blob/main/docs/quirks.zh-CN.md) | 哪些服务端实测过、各家差异、以及哪些能力刻意没做 |
+| [服务端支持与怪癖](https://github.com/xmyfun/python-carddav/blob/main/docs/quirks.zh-CN.md) | 哪些服务端实测过、各家有什么不同，以及由此得出的实用规则 |
 | [同步模型](https://github.com/xmyfun/python-carddav/blob/main/docs/sync-model.zh-CN.md) | 为什么本库没有同步引擎，应用必须自己存什么 |
 | [命令行参考](https://github.com/xmyfun/python-carddav/blob/main/docs/cli.zh-CN.md) | `carddav export`：输出布局、命名、`info.json`、退出码 |
 | [变更日志](https://github.com/xmyfun/python-carddav/blob/main/CHANGELOG.md) | 版本历史 |
@@ -214,7 +214,7 @@ uv run mypy src
 6. **写入绝不自动重试**，UID 绝不隐式生成或改写。
 7. **所有 HTTP 必须经 `Transport.request()`**；只有 `_backend_httpx.py` / `_backend_requests.py` 可以 import HTTP 库。
 8. **解析前拒绝含 `<!DOCTYPE` 的 XML。**
-9. **代码注释与 docstring 只用英文。** `docs/` 下的公开页面双语；`internal/` 下的开发者笔记用中文。
+9. **代码注释与 docstring 只写英文，不写中文（也不出现其他非拉丁语系文字）。** `§`（小节号）、`ß`、`é` 这类欧美语系的非 ASCII 字符允许出现，不必死卡 ASCII。标识符（函数名/变量名/公开 API 名）保持英文（技术需要，无法避免）。`docs/` 下的公开页面双语；`internal/` 下的开发者笔记用中文。
 
 ### 测试
 

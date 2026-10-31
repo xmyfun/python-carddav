@@ -53,7 +53,7 @@ class FakeBackend:
 
 PROPFIND_CARDS = (
     b'<?xml version="1.0"?><d:multistatus xmlns:d="DAV:">'
-    b'<d:response><d:href>/book/a.vcf</d:href><d:propstat><d:prop>'
+    b"<d:response><d:href>/book/a.vcf</d:href><d:propstat><d:prop>"
     b'<d:getetag>"1"</d:getetag></d:prop></d:propstat></d:response>'
     b"</d:multistatus>"
 )

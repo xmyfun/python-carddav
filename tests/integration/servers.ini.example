@@ -1,0 +1,101 @@
+; =====================================================================
+;  CardDAV remote real-server test configuration (template)
+; =====================================================================
+;  This file is a "template" and is committed to the repo. Each server's
+;  URL is the official public address and needs no change; your account and
+;  password are left blank for you to fill in locally.
+;
+;  Usage:
+;    1. Copy this file to servers.ini in the same directory:
+;         cp tests/integration/servers.ini.example tests/integration/servers.ini
+;    2. Fill in your account/password in servers.ini (see per-section notes).
+;    3. Just run the suite - a section runs when configured, and skips when its
+;       credentials are blank or the host is unreachable:
+;         uv run pytest
+;       (write tests additionally need --allow-write; -m remote selects only
+;        these servers, -m local only the local test servers)
+;
+;  Security (must follow):
+;    - servers.ini holds real account/password; it is git-ignored and must
+;      never be committed or pushed.
+;    - The test code only "reads" this file; the password never appears in
+;      source, logs, conversation, or output.
+;    - Do not send account/password in plaintext to the Agent in any chat.
+;    - These tests are not part of the PyPI package: the wheel only contains
+;      src/carddav; tests/ are never packaged.
+;
+;  Field reference:
+;    url      = CardDAV address (base / principal / collection URL all work;
+;               the library auto-discovers)
+;    username = login name
+;    password = password, or an OAuth2 access token (see per-section notes)
+;    auth     = basic | digest | bearer (default basic; Google must be bearer)
+;    verify   = true | false (HTTPS cert verification; set false only for a
+;               local server with a self-signed cert)
+; =====================================================================
+
+
+; ---------------------------------------------------------------------
+; Disroot — Nextcloud + sabre/dav, the most standards-compliant; the
+; preferred "golden round-trip baseline".
+; URL is fixed; no need to fill it in.
+; username = your Disroot username (without @disroot.org)
+; password = Disroot password; if 2FA is on, use an "app password"
+; ---------------------------------------------------------------------
+[disroot]
+url = https://cloud.disroot.org/remote.php/dav
+username =
+password =
+auth = basic
+verify = true
+
+
+; ---------------------------------------------------------------------
+; Google People — CardDAV supports OAuth2 Bearer only, no "password login"
+; URL is the official .well-known discovery entrypoint (Google states the
+; URI structure may change; do not hardcode the principal)
+; username = your Gmail email address
+; password = OAuth2 access token (not your Google password; the library does
+;            not obtain/refresh the token)
+; auth must = bearer
+; ---------------------------------------------------------------------
+[google_people]
+url = https://www.googleapis.com/.well-known/carddav
+username =
+password =
+auth = bearer
+verify = true
+
+
+; ---------------------------------------------------------------------
+; iCloud — must use an "app-specific password", not the Apple ID master password
+;   (generate one at appleid.apple.com under "App-Specific Passwords")
+; URL is fixed. If a mainland-China account cannot connect, change the url to:
+;   https://contacts.icloud.com.cn
+; ---------------------------------------------------------------------
+[icloud]
+url = https://contacts.icloud.com
+username =
+password =
+auth = basic
+verify = true
+
+
+; ---------------------------------------------------------------------
+; Synology Contacts — the URL is not fixed and must be copied from the package
+;   Package: Contacts / Address Book ->  -> CardDAV -> Copy URL
+;   Shape: http://<nas-ip>:<port>/carddav/<user>/<addressbook-uuid>
+;   (the top-level entry http://.../carddav/<user> also works; the library
+;    will discover from there)
+; Note:
+;   - QuickConnect does not support CardDAV; use the LAN IP or DDNS
+;   - standard ports are HTTP 5000 / HTTPS 5001 (use the actual port if DSM
+;     uses a custom one)
+;   - if using a self-signed HTTPS cert, set verify = false
+; ---------------------------------------------------------------------
+[synology_contacts]
+url =
+username =
+password =
+auth = basic
+verify = true

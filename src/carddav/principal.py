@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 from urllib.parse import urljoin
 
 from . import _dav, _xml
+from .errors import DAVError, DiscoveryError
 
 if TYPE_CHECKING:  # pragma: no cover - avoid import cycle at runtime
     from .addressbook import AddressBook
@@ -21,12 +22,16 @@ class Principal:
         url: str,
         *,
         direct_addressbook: str | None = None,
+        probe_error: DAVError | None = None,
     ) -> None:
         self.client = client
         self.url = url
         # Set when the entry URL was already a specific addressbook, so
         # get_addressbooks() can return it directly without further discovery.
         self._direct_addressbook = direct_addressbook
+        # Set when discovery's first PROPFIND on this URL already failed: the
+        # same URL would fail again, so report it instead of retrying.
+        self._probe_error = probe_error
 
     def get_addressbooks(self) -> list[AddressBook]:
         """Discover and list the user's addressbook collections (RFC 6352).
@@ -62,9 +67,31 @@ class Principal:
         return books
 
     def _home_set_url(self) -> str:
-        root = _dav.propfind(
-            self.client.transport, self.url, _xml.propfind_addressbook_home_set(), depth="0"
-        )
+        if self._probe_error is not None:
+            # Discovery already failed a PROPFIND on this URL; asking again would
+            # only repeat it. Report the status instead - a missing trailing slash
+            # is the usual cause of 405.
+            raise DiscoveryError(
+                f"the entry URL rejected PROPFIND (status {self._probe_error.status}); "
+                "it is not a CardDAV collection, or the path is wrong - a missing "
+                "trailing slash often returns 405",
+                status=self._probe_error.status,
+                method="PROPFIND",
+                href=self.url,
+            )
+        try:
+            root = _dav.propfind(
+                self.client.transport, self.url, _xml.propfind_addressbook_home_set(), depth="0"
+            )
+        except DAVError as exc:
+            raise DiscoveryError(
+                f"could not read the addressbook home set (status {exc.status}); "
+                "the entry URL may not be a CardDAV collection - a missing "
+                "trailing slash often returns 405",
+                status=exc.status,
+                method="PROPFIND",
+                href=self.url,
+            ) from exc
         # The home-set is usually carried in a nested <href>; fall back to the
         # element's text for servers that inline the URL.
         home = _xml.find_child_href(root, _xml.CARDDAV_NS, "addressbook-home-set")

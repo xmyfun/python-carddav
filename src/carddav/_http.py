@@ -78,6 +78,7 @@ def make_backend(
     auth: object | None = None,
     verify: bool = True,
     timeout: tuple[float, float] = DEFAULT_TIMEOUT,
+    trust_env: bool = True,
 ) -> Backend:
     """Build a backend by name, or return *backend* unchanged if it is an object.
 
@@ -91,16 +92,15 @@ def make_backend(
     if name == "httpx":
         from ._backend_httpx import HttpxBackend
 
-        return HttpxBackend(auth=auth, verify=verify, timeout=timeout)
+        return HttpxBackend(auth=auth, verify=verify, timeout=timeout, trust_env=trust_env)
     if name == "requests":
         try:
             from ._backend_requests import RequestsBackend
         except ImportError as exc:  # pragma: no cover - depends on install extras
             raise ImportError(
-                "the requests backend needs an optional dependency: "
-                "pip install 'carddav[requests]'"
+                "the requests backend needs an optional dependency: pip install 'carddav[requests]'"
             ) from exc
-        return RequestsBackend(auth=auth, verify=verify, timeout=timeout)
+        return RequestsBackend(auth=auth, verify=verify, timeout=timeout, trust_env=trust_env)
     raise ValueError(
         f"unknown backend {backend!r}; expected 'httpx', 'requests', or a Backend object"
     )

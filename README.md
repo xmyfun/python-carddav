@@ -1,22 +1,10 @@
 # carddav
 
-**English** · [简体中文](README.zh-CN.md)
+**English** · [简体中文](https://github.com/xmyfun/python-carddav/blob/main/README.zh-CN.md)
 
 A thin, predictable **CardDAV client library for Python** — the source code of the PyPI package [`carddav`](https://pypi.org/project/carddav/).
 
 > **Status: 0.3.0 — not yet released to PyPI.** Everything below is implemented and exercised against a real server (Synology Contacts / Radicale).
-
-## Existing options
-
-A handful of other projects touch the CardDAV space. None of them is a small, dependency-light Python library that talks CardDAV directly and leaves your contact data alone — the gap this project fills.
-
-| Project | What it is | Why it does not fit here |
-|---|---|---|
-| [`caldav`](https://github.com/python-caldav/caldav) | A CalDAV client library for Python (calendars and tasks). | Built around CalDAV, not address books; its methods and data model assume `VEVENT`/`VTODO`, so CardDAV contacts are out of scope. |
-| [`pyCardDAV`](https://pypi.org/project/pyCardDAV/) | A Python 2-era standalone contacts client with a CLI. | Abandoned and Python 2 only; not importable as a library, and unmaintained for years. |
-| [`carddavclient`](https://github.com/mstilkerich/carddavclient) | A CardDAV client written in PHP. | Solves the right problem but in PHP, so it cannot be a dependency of a Python project. |
-| [`vdirsyncer`](https://github.com/pimutils/vdirsyncer) | A sync engine that can talk to CardDAV servers. | A full application, not an installable library; its CardDAV code is internal and not exposed for reuse. |
-| [`google-api-python-client`](https://pypi.org/project/google-api-python-client/) | Google's official SDK for the People REST API. | Speaks the People REST API, not CardDAV; only relevant if you want Google Contacts over REST, which this library deliberately does not wrap. |
 
 ## Features
 
@@ -37,8 +25,20 @@ Deliberately out of scope, because they belong to the caller:
 - UID generation or rewriting
 - **the Google People API** — Google Contacts is reachable two ways: the **CardDAV** endpoint (what this library speaks) and the **People REST API** (Google's official Python client is [`google-api-python-client`](https://pypi.org/project/google-api-python-client/)). Only the CardDAV path is implemented here; if you need the People API, use that SDK in your own code — this library neither wraps nor depends on it
 - OAuth2 authorization-code flow and token refresh — `BearerAuth(token)` takes a token you already obtained
+- **administering the server over DAV** — this library reads and writes cards, it does not manage collections: no `OPTIONS`/`DAV` capability probing (we discover by doing), no extended `MKCOL`, no `PROPPATCH`, no `COPY`/`MOVE`, no `LOCK`/`UNLOCK` (`If-Match` covers the conflicts we care about), and no partial retrieval via `CARDDAV:prop` — no server implements it
 
 This is on purpose: a client that "understands" your contacts can no longer tell you what the server actually did.
+
+## Other available options
+
+A handful of other projects touch the CardDAV space. None of them is a small, dependency-light Python library that talks CardDAV directly and leaves your contact data alone — the gap this project fills.
+
+| Project | Description | Why it does not fit here |
+|---|---|---|
+| [`caldav`](https://github.com/python-caldav/caldav) | A CalDAV client library for Python (calendars and tasks). | Built around CalDAV, not address books; its methods and data model assume `VEVENT`/`VTODO`, so CardDAV contacts are out of scope. |
+| [`pyCardDAV`](https://pypi.org/project/pyCardDAV/) | A Python 2-era standalone contacts client with a CLI. | Abandoned and Python 2 only; not importable as a library, and unmaintained for years. |
+| [`carddavclient`](https://github.com/mstilkerich/carddavclient) | A CardDAV client written in PHP. | Solves the right problem but in PHP, so it cannot be a dependency of a Python project. |
+| [`vdirsyncer`](https://github.com/pimutils/vdirsyncer) | A sync engine that can talk to CardDAV servers. | A full application, not an installable library; its CardDAV code is internal and not exposed for reuse. |
 
 ## Installation
 
@@ -184,7 +184,7 @@ file layout and `info.json` schema: [`docs/cli.md`](https://github.com/xmyfun/py
 
 | Page | What it covers |
 |---|---|
-| [Server support & quirks](https://github.com/xmyfun/python-carddav/blob/main/docs/quirks.md) | Which servers are verified, what each one does differently, and what is deliberately not implemented |
+| [Server support & quirks](https://github.com/xmyfun/python-carddav/blob/main/docs/quirks.md) | Which servers are verified, what each one does differently, and the practical rules that follow |
 | [Sync model](https://github.com/xmyfun/python-carddav/blob/main/docs/sync-model.md) | Why there is no sync engine, and what your application must store |
 | [CLI reference](https://github.com/xmyfun/python-carddav/blob/main/docs/cli.md) | `carddav export`: output layout, naming, `info.json`, exit codes |
 | [Changelog](https://github.com/xmyfun/python-carddav/blob/main/CHANGELOG.md) | Release history |
@@ -201,7 +201,7 @@ but the ones marked **non-negotiable** are enforced in review.
 - **Bug reports / questions** → [open an issue](https://github.com/xmyfun/python-carddav/issues). Please include the server software and version (`Nextcloud 30`, `iCloud`, …), since CardDAV behaviour differs a lot between implementations.
 - **Anything bigger than a typo fix** → open an issue first. API shape and protocol handling are still being decided, and a PR that arrives before the design does usually has to be rewritten.
 - **Security issues** → do **not** open an issue; use [GitHub Security Advisories](https://github.com/xmyfun/python-carddav/security/advisories/new).
-- **README changes** → `README.md` and [`README.zh-CN.md`](README.zh-CN.md) are mirrors; update **both** in the same PR.
+- **README changes** → `README.md` and [`README.zh-CN.md`](https://github.com/xmyfun/python-carddav/blob/main/README.zh-CN.md) are mirrors; update **both** in the same PR.
 
 ### Development setup
 
@@ -231,7 +231,7 @@ server actually did, and stay small.
 6. **Writes are never retried automatically**, and UIDs are never generated or rewritten implicitly.
 7. **All HTTP goes through `Transport.request()`**; only `_backend_httpx.py` / `_backend_requests.py` may import an HTTP library.
 8. **Reject XML containing `<!DOCTYPE`** before parsing.
-9. **Code comments and docstrings are English only.** Public pages under `docs/` are bilingual; developer notes under `internal/` are Chinese.
+9. **Code comments and docstrings are English only (no Chinese or other non-Latin scripts).** Non-ASCII European characters such as `§` (section sign), `ß`, `é` are allowed — strict ASCII is not required. Identifiers (function/variable/public-API names) stay English (a technical necessity). Public pages under `docs/` are bilingual; developer notes under `internal/` are Chinese.
 
 ### Tests
 

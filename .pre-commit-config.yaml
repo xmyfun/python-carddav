@@ -20,8 +20,11 @@ repos:
         entry: uv run vermin -t=3.10- --violations src
         language: system
         pass_filenames: false
-      - id: pytest-not-live
-        name: pytest (offline, "not live")
-        entry: uv run pytest -q -m "not live"
+      - id: pytest-offline
+        name: pytest (offline: unit + local test servers)
+        # "not remote" == everything except the real servers in servers.ini: unit
+        # tests plus the local servers the fixtures launch themselves. Fully
+        # offline, so a commit never depends on credentials or network.
+        entry: uv run pytest -q -m "not remote"
         language: system
         pass_filenames: false

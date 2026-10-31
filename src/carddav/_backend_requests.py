@@ -27,8 +27,10 @@ class RequestsBackend:
         auth: object | None = None,
         verify: bool = True,
         timeout: tuple[float, float] = DEFAULT_TIMEOUT,
+        trust_env: bool = True,
     ) -> None:
         self._session = requests.Session()
+        self._session.trust_env = trust_env
         native, extra_headers = _translate_auth(auth)
         if native is not None:
             self._session.auth = native

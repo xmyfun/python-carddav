@@ -1,3 +1,5 @@
+# This repository is **public**; its ignore policy is the reverse of a private project:
+# anything that could contain personal data, credentials, or local build artifacts must not be committed.
 
 # ---- Python ----
 __pycache__/
@@ -7,7 +9,9 @@ build/
 dist/
 .venv/
 venv/
+.python-version
 
+# ---- Tool caches ----
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
@@ -15,11 +19,13 @@ venv/
 coverage.xml
 htmlcov/
 
+# ---- Editor / OS ----
 .DS_Store
 .idea/
 .vscode/
 *.swp
 
+# ---- Credentials & local config (never committed) ----
 .env
 .env.*
 *.local.toml
@@ -27,9 +33,17 @@ carddav.conf
 *.pem
 *.key
 
-tests/live/servers.ini
+# Live-test config: the template (servers.ini.example) is committed, but the real config
+# contains accounts/passwords and must never be committed.
+tests/integration/servers.ini
 
+# ---- Development and local files ----
+internal/
 out/
 *.log
 
+# ---- Agent session notes (incl. cross-session memory; not part of the public repo) ----
+AGENTS.md
 .workbuddy/
+.claude/
+.codex/

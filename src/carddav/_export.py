@@ -86,9 +86,7 @@ def card_filenames(cards: list[Card]) -> list[str]:
     return names
 
 
-def targets(
-    plan: list[BookExport], out_dir: Path, *, single_file: bool
-) -> list[Path]:
+def targets(plan: list[BookExport], out_dir: Path, *, single_file: bool) -> list[Path]:
     """Every file an export would write (used for conflict checks and dry runs)."""
     paths: list[Path] = []
     for item in plan:
@@ -98,11 +96,7 @@ def targets(
             if item.cards:  # empty address books produce no bundle
                 paths.append(out_dir / item.filename)
             continue
-        paths.extend(
-            out_dir / item.name / name
-            for name in card_filenames(item.cards)
-            if name
-        )
+        paths.extend(out_dir / item.name / name for name in card_filenames(item.cards) if name)
     paths.append(out_dir / INFO_FILENAME)
     return paths
 

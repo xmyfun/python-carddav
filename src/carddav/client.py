@@ -51,12 +51,19 @@ def get_davclient(
     backend: str | Backend = "httpx",
     verify: bool = True,
     timeout: tuple[float, float] = DEFAULT_TIMEOUT,
+    trust_env: bool = True,
 ) -> DAVClient:
     """Create a :class:`DAVClient`. Construction only sets up the connection.
 
     ``backend``: ``"httpx"`` (default), ``"requests"`` (needs the extra), or any
     object implementing the ``Backend`` protocol - the latter is how tests and
     future HTTP stacks plug in without patching this library.
+
+    ``trust_env``: forwarded to the HTTP stack. Defaults to ``True`` (honour
+    ``HTTP_PROXY`` / ``NO_PROXY`` from the environment, which is what almost
+    every real deployment wants). Set it to ``False`` only for loopback servers
+    reached through a local proxy that would otherwise rewrite request targets
+    (see the localhost proxy pitfall in ``internal/06``).
     """
     return DAVClient(
         url,
@@ -66,6 +73,7 @@ def get_davclient(
         backend=backend,
         verify=verify,
         timeout=timeout,
+        trust_env=trust_env,
     )
 
 
@@ -82,6 +90,7 @@ class DAVClient:
         backend: str | Backend = "httpx",
         verify: bool = True,
         timeout: tuple[float, float] = DEFAULT_TIMEOUT,
+        trust_env: bool = True,
     ) -> None:
         self.transport = Transport(
             make_backend(
@@ -89,6 +98,7 @@ class DAVClient:
                 auth=self._make_auth(auth, username, password),
                 verify=verify,
                 timeout=timeout,
+                trust_env=trust_env,
             )
         )
         # Bare host (no path) is resolved via RFC 6764 `.well-known/carddav`;
@@ -119,11 +129,12 @@ class DAVClient:
         try:
             root = _dav.propfind(self.transport, self.url, _xml.propfind_resourcetype(), depth="0")
             responses = _xml.iter_responses(root)
-        except DAVError:
+        except DAVError as exc:
             # The entry URL is unusable for a resourcetype probe (e.g. Radicale
             # 401 on a collection) - fall back to treating it as the discovery
-            # root.
-            return Principal(self, self.url)
+            # root. Hand the failure along so discovery can report it instead of
+            # repeating the same PROPFIND (see Principal._home_set_url).
+            return Principal(self, self.url, probe_error=exc)
 
         if not responses:
             raise DiscoveryError("PROPFIND returned an empty multistatus", href=self.url)

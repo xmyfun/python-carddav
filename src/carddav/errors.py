@@ -76,10 +76,11 @@ class SyncTokenInvalid(DAVError):
 
 
 class MissingUIDError(DAVError):
-    """Server answered 400 and the error body points at a missing UID.
+    """A UID is missing or unusable - server-side or when deriving a name.
 
-    Raised only when the server rejects the card; the library never pre-checks
-    UID client-side (see ``internal/02`` section 6).
+    Raised from the server path (HTTP 400 whose body points at a missing UID)
+    and from ``put_card()`` when it cannot derive a resource name from the
+    card's UID. The library never invents a UID (see ``internal/02`` section 6).
     """
 
 

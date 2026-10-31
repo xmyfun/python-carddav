@@ -23,6 +23,7 @@ class HttpxBackend:
         auth: object | None = None,
         verify: bool = True,
         timeout: tuple[float, float] = DEFAULT_TIMEOUT,
+        trust_env: bool = True,
     ) -> None:
         native, extra_headers = _translate_auth(auth)
         self._client = httpx.Client(
@@ -32,6 +33,7 @@ class HttpxBackend:
                 connect=timeout[0], read=timeout[1], write=timeout[1], pool=timeout[0]
             ),
             follow_redirects=True,
+            trust_env=trust_env,
             headers={"User-Agent": USER_AGENT, **extra_headers},
         )
 
