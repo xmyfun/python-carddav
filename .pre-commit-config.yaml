@@ -6,25 +6,35 @@ repos:
         args: [--fix]
       - id: ruff-format
 
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v2.4.0
-    hooks:
-      - id: mypy
-        args: [src]
-        additional_dependencies: [types-requests]
-
   - repo: local
     hooks:
+      - id: mypy
+        name: mypy (uv run, project env)
+        entry: uv run mypy src
+        language: system
+        pass_filenames: false
       - id: vermin
         name: vermin (enforce Python 3.10 floor)
         entry: uv run vermin -t=3.10- --violations src
         language: system
         pass_filenames: false
       - id: pytest-offline
-        name: pytest (offline: unit + local test servers)
+        name: "pytest (offline: unit + local test servers)"
         # "not remote" == everything except the real servers in servers.ini: unit
         # tests plus the local servers the fixtures launch themselves. Fully
         # offline, so a commit never depends on credentials or network.
-        entry: uv run pytest -q -m "not remote"
+        entry: bash -c
+        args: ['mkdir -p tmp && TMPDIR="$PWD/tmp" uv run pytest -q -m "not remote"']
         language: system
         pass_filenames: false
+
+  # gitleaks via the official GitHub repo. The `gitleaks` id (and its
+  # `language: golang`, defined upstream in the repo's .pre-commit-hooks.yaml -
+  # you do NOT write it here) makes pre-commit build it from source on first
+  # run, so a Go toolchain is required. Its entry is `gitleaks git --pre-commit
+  # --redact --staged --verbose`, which scans the staged (to-be-committed) diff
+  # - so secrets introduced in the very commit being made are still caught.
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks

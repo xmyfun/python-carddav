@@ -37,9 +37,21 @@ carddav.conf
 # contains accounts/passwords and must never be committed.
 tests/integration/servers.ini
 
+# ---- Key material & local client exports (never committed) ----
+*.pfx
+*.p12
+*.crt
+*.cer
+*.der
+id_*
+*.pub
+known_hosts
+thunder_client_*
+
 # ---- Development and local files ----
 internal/
 out/
+tmp/
 *.log
 
 # ---- Agent session notes (incl. cross-session memory; not part of the public repo) ----

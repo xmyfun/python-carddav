@@ -68,9 +68,9 @@ Not included: OAuth2 authorization-code flow and token refresh, client certifica
 The HTTP stack sits behind a two-method interface (`Backend`: `request()` / `close()`), so it can be swapped or mocked without touching the library:
 
 ```python
-get_davclient(url, backend="httpx")     # default
+get_davclient(url, backend="httpx")  # default
 get_davclient(url, backend="requests")  # pip install "carddav[requests]"
-get_davclient(url, backend=my_fake)     # any object with request()/close()
+get_davclient(url, backend=my_fake)  # any object with request()/close()
 ```
 
 The same seam is what makes offline tests possible — see `tests/test_backend.py`.

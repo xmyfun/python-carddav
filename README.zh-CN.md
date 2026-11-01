@@ -67,9 +67,9 @@ pip install "carddav[requests]"  # 可选：requests 后端
 HTTP 层被收在一个只有两个方法的接口后面（`Backend`：`request()` / `close()`），因此换栈或 mock 都不必碰库本身：
 
 ```python
-get_davclient(url, backend="httpx")     # 默认
+get_davclient(url, backend="httpx")  # 默认
 get_davclient(url, backend="requests")  # 需 pip install "carddav[requests]"
-get_davclient(url, backend=my_fake)     # 任何带 request()/close() 的对象
+get_davclient(url, backend=my_fake)  # 任何带 request()/close() 的对象
 ```
 
 离线测试正是靠这条缝实现的 —— 见 `tests/test_backend.py`。
