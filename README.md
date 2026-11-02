@@ -4,7 +4,7 @@
 
 A thin, predictable **CardDAV client library for Python** — the source code of the PyPI package [`carddav`](https://pypi.org/project/carddav/).
 
-> **Status: 0.3.0 — not yet released to PyPI.** Everything below is implemented and exercised against a real server (Synology Contacts / Radicale).
+> **Status: 0.1.0.** Everything below is implemented and exercised against a real server (Synology Contacts / Radicale).
 
 ## Features
 
@@ -48,8 +48,6 @@ pip install "carddav[requests]"  # optional: requests backend
 ```
 
 Requires Python 3.10+. Note that Python 3.10 is end-of-life upstream, so it is supported on a best-effort basis and the floor will move up together with our dependencies.
-
-> **PyPI release pending.** Until `carddav` lands on PyPI: `pip install git+https://github.com/xmyfun/python-carddav.git`.
 
 
 ## Authentication

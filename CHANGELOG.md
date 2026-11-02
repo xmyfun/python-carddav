@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.3.0] - 2026-11-03
+## [0.1.0] - 2026-11-03
 
-First public release of `carddav`, a thin, dependency-light CardDAV client
+Initial release of `carddav`, a thin, dependency-light CardDAV client
 library for Python.
 
 ### Added

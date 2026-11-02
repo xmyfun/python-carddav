@@ -9,7 +9,10 @@ build/
 dist/
 .venv/
 venv/
+
+# Local-only: Python pin and uv lock are NOT committed to the repo (see AGENTS.md §3)
 .python-version
+uv.lock
 
 # ---- Tool caches ----
 .pytest_cache/

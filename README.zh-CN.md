@@ -4,7 +4,7 @@
 
 一个轻量、行为可预期的 **Python CardDAV 客户端库** —— PyPI 包 [`carddav`](https://pypi.org/project/carddav/) 的源码仓库。
 
-> **状态：0.3.0 —— 尚未发布到 PyPI。** 下文描述的功能均已实现，并在真实服务端（Synology Contacts，底层为 Radicale 构建）上验证过。
+> **状态：0.1.0。** 下文描述的功能均已实现，并在真实服务端（Synology Contacts，底层为 Radicale 构建）上验证过。
 
 ## 功能
 
@@ -48,8 +48,6 @@ pip install "carddav[requests]"  # 可选：requests 后端
 ```
 
 要求 Python 3.10+。注意 3.10 已上游 EOL，本库按「尽力支持」对待，下限会随依赖一起上移。
-
-> **PyPI 发布在即。** 在 `carddav` 上架前，可先这样装：`pip install git+https://github.com/xmyfun/python-carddav.git`。
 
 ## 鉴权
 

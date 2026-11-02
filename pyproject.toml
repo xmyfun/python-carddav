@@ -1,13 +1,13 @@
 [project]
 name = "carddav"
-version = "0.3.0"
+version = "0.1.0"
 description = "A minimal, dependency-light CardDAV client library for Python"
 readme = "README.md"
 requires-python = ">=3.10"           # Set 2026-10-28; 3.10 is EOL, best-effort only (sunset clause in docs/README)
 license = "Apache-2.0"              # PEP 639 SPDX expression (set 2026-10-28)
 license-files = ["LICENSE", "NOTICE"]
 authors = [{ name = "XMyFun" }]
-keywords = ["carddav", "webdav", "vcard", "contacts", "addressbook"]
+keywords = ["carddav", "caldav", "webdav", "vcard", "contacts", "addressbook", "carddav-client", "carddavclient", "sync", "synchronization"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -17,6 +17,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
     "Programming Language :: Python :: 3 :: Only",
     "Topic :: Communications :: Email :: Address Book",
     "Topic :: Software Development :: Libraries :: Python Modules",

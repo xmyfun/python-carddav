@@ -78,7 +78,7 @@ infer identity from file names.
 ```json
 {
   "exported_at": "2026-10-29T17:40:00+08:00",
-  "client": {"name": "carddav", "version": "0.2.0"},
+  "client": {"name": "carddav", "version": "0.1.0"},
   "mode": "folders",
   "books": [
     {
